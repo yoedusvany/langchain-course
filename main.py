@@ -2,38 +2,26 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-from langchain.agents import create_agent
-from langchain.tools import tool
-from langchain_core.messages.human import HumanMessage
+from langchain_classic import hub
+from langchain_classic.agents.agent import AgentExecutor
+from langchain_classic.agents.react.agent import create_react_agent
 from langchain_ollama import ChatOllama
-from tavily import TavilyClient
+from langchain_tavily import TavilySearch
 
-tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
-
-@tool
-def search(query: str) -> str:
-    """
-    Tool that searches for information on the web.
-
-    Args:
-        query (str): The search query.
-
-    Returns:
-        str: The search results.
-    """
-    print(f"Searching for: {query}")
-    return tavily.search(query=query)
-
-
+tools = [TavilySearch()]
 llm = ChatOllama(model="llama3.2")
-tools = [search]
-agent = create_agent(llm, tools=tools)
+react_prompt = hub.pull("hwchase17/react")
+agent = create_react_agent(llm, tools=tools, prompt=react_prompt)
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+chain = agent_executor
 
 
 def main():
     print("Hello from langchain-course!")
-    # result = agent.invoke({"messages": HumanMessage(content="What is the capital of France?")})
-    result = agent.invoke({"messages": HumanMessage(content="Search for 3 jobs for an AI engineer using langchain in niagara region on linkedin and list the details?")})
+    result = chain.invoke(
+        input = {
+            "input": "search for 3 job positions for an ai engineer using langchain in the Niagara region on linkedin and list their details"}
+    )
     print(result)
    
 if __name__ == "__main__":
