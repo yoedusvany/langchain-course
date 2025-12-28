@@ -6,7 +6,6 @@ from langchain_core.prompts import PromptTemplate
 # from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
 
-
 load_dotenv()
 
 
@@ -35,6 +34,7 @@ def main():
 
     response = chain.invoke({"information": information})
     print(response.content)
+
 
 if __name__ == "__main__":
     main()
